@@ -521,7 +521,7 @@
 
 <div class="login-overlay" id="login-overlay">
   <div class="login-card">
-    <h2>七年五班聯絡簿</h2>
+    <h2>七年5班聯絡簿</h2>
     <div class="login-sub">請選擇身份並輸入密碼登入</div>
 
     <div class="login-role-group" id="login-role-group">
@@ -541,7 +541,7 @@
 <div class="app">
   <aside class="spine">
     <div>
-      <div class="spine-title">七年五班<br>聯絡簿</div>
+      <div class="spine-title">七年5班<br>聯絡簿</div>
       <div class="spine-sub" id="spine-role-label">施老師 · 2026 學年度</div>
     </div>
 
@@ -588,22 +588,7 @@
   let state = {
     role: null,
     selectedDate: todayISO,
-    entries: [
-      {
-        date: shiftDate(todayISO, -1),
-        homework: ["國語習作 p.24-26", "數學圓形紙一張", "閱讀護照簽名"],
-        announcement: "明天請帶直笛到校，準備下週的音樂課發表。天氣轉涼，請提醒孩子攜帶外套。",
-        published: true,
-        ack: false
-      },
-      {
-        date: shiftDate(todayISO, -2),
-        homework: ["社會習作 p.30", "訂正數學小考"],
-        announcement: "本週五為校外教學，費用已於上週發放通知單，請於本週三前繳交。",
-        published: true,
-        ack: true
-      }
-    ],
+    entries: [],
     draft: {
       date: todayISO,
       homework: [""],
