@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雲端聯絡簿 — 原型</title>
+<style>
+  :root {
+    --paper: #F7F1DF;
+    --paper-line: #DED4B4;
+    --ink: #2B2B3D;
+    --ink-soft: #5B5A6E;
+    --stamp-red: #C1443C;
+    --stamp-red-soft: #E9C9C6;
+    --spine-green: #3F6E52;
+    --spine-green-light: #4F8563;
+    --sage: #8FA688;
+    --muted: #8A8577;
+    --card-bg: #FFFDF6;
+    --shadow: 0 2px 0 rgba(43,43,61,0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", -apple-system, sans-serif;
+    background: #EDE6D0;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    max-width: 1100px;
+    margin: 32px auto;
+    min-height: 680px;
+    box-shadow: 0 12px 40px rgba(43,43,61,0.18);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 780px) {
+    .app { grid-template-columns: 1fr; margin: 0; box-shadow: none; }
+    .spine { flex-direction: row; overflow-x: auto; padding: 16px; }
+    .spine-dates { flex-direction: row; }
+  }
+
+  /* ---------- 書背 / 側欄 ---------- */
+  .spine {
+    background: var(--spine-green);
+    color: #F4EFDD;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .spine-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+  }
+
+  .spine-sub {
+    font-size: 12.5px;
+    color: #CFE0D2;
+    margin-top: 4px;
+  }
+
+  .role-toggle {
+    display: flex;
+    background: rgba(0,0,0,0.18);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .role-toggle button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #DDE8DD;
+    padding: 8px 6px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease;
+  }
+
+  .role-toggle button.active {
+    background: var(--paper);
+    color: var(--spine-green);
+    font-weight: 700;
+  }
+
+  .spine-section-label {
+    font-size: 12px;
+    color: #B9D2BE;
+    text-transform: none;
+    border-top: 1px solid rgba(244,239,221,0.2);
+    padding-top: 16px;
+  }
+
+  .spine-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+  }
+
+  .spine-date-btn {
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #E4EEE3;
+    padding: 9px 10px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .spine-date-btn:hover { background: var(--spine-green-light); }
+  .spine-date-btn.selected { background: var(--paper); color: var(--spine-green); font-weight: 700; }
+
+  .spine-date-btn .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--stamp-red);
+    flex-shrink: 0;
+    margin-left: 6px;
+  }
+
+  /* ---------- 主頁面(格線紙) ---------- */
+  .page {
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 33px,
+        var(--paper-line) 34px
+      ),
+      var(--paper);
+    padding: 36px 44px 60px;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-header h1 {
+    font-size: 21px;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .page-header .today {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- 教師輸入卡 ---------- */
+  .entry-form {
+    background: var(--card-bg);
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 22px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .entry-form label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+
+  .entry-form label:first-of-type { margin-top: 0; }
+
+  .entry-form input[type="date"],
+  .entry-form textarea {
+    width: 100%;
+    border: 1px solid var(--paper-line);
+    background: #fff;
+    border-radius: 4px;
+    padding: 9px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .entry-form textarea { resize: vertical; min-height: 54px; }
+
+  .hw-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .hw-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .hw-row input[type="text"] {
+    flex: 1;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .hw-row button.remove {
+    border: none;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+  }
+  .hw-row button.remove:hover { color: var(--stamp-red); }
+
+  .add-hw-btn {
+    align-self: flex-start;
+    border: 1px dashed var(--sage);
+    background: none;
+    color: var(--spine-green);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-family: inherit;
+  }
+  .add-hw-btn:hover { background: #EFF4EC; }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .btn-stamp {
+    background: var(--stamp-red);
+    color: #FFF6F0;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 24px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 3px 0 #9B342D;
+  }
+  .btn-stamp:hover { transform: translateY(-1px); }
+  .btn-stamp:active { transform: translateY(1px); box-shadow: 0 1px 0 #9B342D; }
+
+  /* ---------- 條目卡(共用) ---------- */
+  .entries { display: flex; flex-direction: column; gap: 18px; }
+
+  .entry-card {
+    background: var(--card-bg);
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 20px 22px;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+
+  .entry-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .entry-date {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .entry-weekday {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 6px;
+    font-weight: 400;
+  }
+
+  .stamp {
+    width: 46px;
+    height: 46px;
+    border: 2.5px solid var(--stamp-red);
+    border-radius: 50%;
+    color: var(--stamp-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    transform: rotate(-8deg);
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .section-title {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 14px 0 6px;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+
+  .hw-view-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hw-view-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+  }
+
+  .hw-view-list li::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: var(--sage);
+    flex-shrink: 0;
+  }
+
+  .announcement-text {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .ack-row {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--paper-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ack-btn {
+    border: 1px solid var(--sage);
+    background: #fff;
+    color: var(--spine-green);
+    padding: 7px 16px;
+    border-radius: 18px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .ack-btn.done {
+    background: #EAF1E7;
+    border-color: var(--spine-green);
+    cursor: default;
+  }
+
+  .ack-status {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .monitor-stats {
+    background: var(--card-bg);
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .monitor-stats strong { color: var(--spine-green); font-size: 15px; }
+
+  /* ---------- 登入畫面 ---------- */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: #EDE6D0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+
+  .login-card {
+    background: var(--card-bg);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 12px 40px rgba(43,43,61,0.18);
+  }
+
+  .login-card h2 {
+    margin: 0 0 4px;
+    font-size: 19px;
+  }
+  .login-card .login-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+
+  .login-role-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .login-role-btn {
+    text-align: left;
+    border: 1.5px solid var(--paper-line);
+    background: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .login-role-btn.selected {
+    border-color: var(--spine-green);
+    background: #EAF1E7;
+    font-weight: 700;
+    color: var(--spine-green);
+  }
+
+  .login-card label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .login-card input[type="password"] {
+    width: 100%;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+  }
+
+  .login-error {
+    color: var(--stamp-red);
+    font-size: 12.5px;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+
+  .login-submit {
+    width: 100%;
+    margin-top: 18px;
+    background: var(--stamp-red);
+    color: #FFF6F0;
+    border: none;
+    padding: 11px;
+    border-radius: 24px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 3px 0 #9B342D;
+  }
+
+  .logout-btn {
+    background: none;
+    border: 1px solid rgba(244,239,221,0.4);
+    color: #E4EEE3;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    align-self: flex-start;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <h2>五年二班聯絡簿</h2>
+    <div class="login-sub">請選擇身份並輸入密碼登入</div>
+
+    <div class="login-role-group" id="login-role-group">
+      <button type="button" class="login-role-btn selected" data-role="teacher">施老師</button>
+      <button type="button" class="login-role-btn" data-role="monitor">班長</button>
+      <button type="button" class="login-role-btn" data-role="parent">家長 / 學生</button>
+    </div>
+
+    <label id="login-password-label">密碼</label>
+    <input type="password" id="login-password" placeholder="請輸入密碼" autocomplete="off">
+    <div class="login-error" id="login-error"></div>
+
+    <button class="login-submit" id="login-submit">登入</button>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="spine">
+    <div>
+      <div class="spine-title">五年二班<br>聯絡簿</div>
+      <div class="spine-sub" id="spine-role-label">施老師 · 2026 學年度</div>
+    </div>
+
+    <button class="logout-btn" id="logout-btn">登出</button>
+
+    <div>
+      <div class="spine-section-label">歷史紀錄</div>
+      <div class="spine-dates" id="spine-dates"></div>
+    </div>
+  </aside>
+
+  <main class="page">
+    <div class="page-header">
+      <h1 id="page-title">今日聯絡事項</h1>
+      <div class="today" id="page-today"></div>
+    </div>
+
+    <div id="teacher-form-wrap"></div>
+    <div class="entries" id="entries-wrap"></div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const weekdayNames = ["日","一","二","三","四","五","六"];
+
+  function fmtWeekday(iso) {
+    const d = new Date(iso + "T00:00:00");
+    return "週" + weekdayNames[d.getDay()];
+  }
+  function fmtDate(iso) {
+    const [y,m,dd] = iso.split("-");
+    return `${y}/${m}/${dd}`;
+  }
+
+  const VALID_PASSWORD = "705115";
+  const ROLE_LABELS = {
+    teacher: "施老師 · 2026 學年度",
+    monitor: "班長登入 · 2026 學年度",
+    parent: "家長 / 學生 · 2026 學年度"
+  };
+
+  let state = {
+    role: null,
+    selectedDate: todayISO,
+    entries: [
+      {
+        date: shiftDate(todayISO, -1),
+        homework: ["國語習作 p.24-26", "數學圓形紙一張", "閱讀護照簽名"],
+        announcement: "明天請帶直笛到校，準備下週的音樂課發表。天氣轉涼，請提醒孩子攜帶外套。",
+        published: true,
+        ack: false
+      },
+      {
+        date: shiftDate(todayISO, -2),
+        homework: ["社會習作 p.30", "訂正數學小考"],
+        announcement: "本週五為校外教學，費用已於上週發放通知單，請於本週三前繳交。",
+        published: true,
+        ack: true
+      }
+    ],
+    draft: {
+      date: todayISO,
+      homework: [""],
+      announcement: ""
+    }
+  };
+
+  function shiftDate(iso, days) {
+    const d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0,10);
+  }
+
+  function findEntry(date) {
+    return state.entries.find(e => e.date === date);
+  }
+
+  function render() {
+    document.getElementById("page-today").textContent = fmtDate(todayISO) + "（" + fmtWeekday(todayISO) + "）";
+
+    document.getElementById("spine-role-label").textContent = ROLE_LABELS[state.role] || "";
+    document.getElementById("page-title").textContent =
+      state.role === "teacher" ? "登打今日聯絡事項" :
+      state.role === "monitor" ? "聯絡簿內容（班長檢視）" : "聯絡簿內容";
+
+    renderSpineDates();
+    renderTeacherForm();
+    renderMonitorStats();
+    renderEntries();
+  }
+
+  function renderMonitorStats() {
+    const existing = document.getElementById("monitor-stats-wrap");
+    if (existing) existing.remove();
+    if (state.role !== "monitor") return;
+
+    const total = state.entries.length;
+    const read = state.entries.filter(e => e.ack).length;
+
+    const div = document.createElement("div");
+    div.id = "monitor-stats-wrap";
+    div.className = "monitor-stats";
+    div.innerHTML = `<span>全班家長已讀進度</span><strong>${read} / ${total} 則已讀</strong>`;
+
+    const entriesWrap = document.getElementById("entries-wrap");
+    entriesWrap.parentNode.insertBefore(div, entriesWrap);
+  }
+
+  function renderSpineDates() {
+    const wrap = document.getElementById("spine-dates");
+    const allDates = Array.from(new Set(
+      [todayISO, ...state.entries.map(e => e.date)]
+    )).sort((a,b) => b.localeCompare(a));
+
+    wrap.innerHTML = "";
+    allDates.forEach(date => {
+      const btn = document.createElement("button");
+      btn.className = "spine-date-btn" + (date === state.selectedDate ? " selected" : "");
+      const hasEntry = !!findEntry(date);
+      btn.innerHTML = `<span>${fmtDate(date)}（${fmtWeekday(date)}）${date === todayISO ? " · 今天" : ""}</span>` +
+        (hasEntry ? '<span class="dot"></span>' : '');
+      btn.onclick = () => { state.selectedDate = date; render(); };
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderTeacherForm() {
+    const wrap = document.getElementById("teacher-form-wrap");
+    if (state.role !== "teacher") { wrap.innerHTML = ""; return; }
+
+    wrap.innerHTML = `
+      <div class="entry-form">
+        <label>日期</label>
+        <input type="date" id="draft-date" value="${state.draft.date}">
+
+        <label>回家作業</label>
+        <div class="hw-list" id="draft-hw-list"></div>
+        <button type="button" class="add-hw-btn" id="add-hw-btn">＋ 新增一項作業</button>
+
+        <label>聯絡事項 / 公告</label>
+        <textarea id="draft-announcement" placeholder="例如：明天請帶美術用具、班費繳交提醒⋯⋯">${state.draft.announcement}</textarea>
+
+        <div class="form-actions">
+          <button class="btn-stamp" id="publish-btn">蓋章送出</button>
+        </div>
+      </div>
+    `;
+
+    const hwList = document.getElementById("draft-hw-list");
+    hwList.innerHTML = "";
+    state.draft.homework.forEach((val, i) => {
+      const row = document.createElement("div");
+      row.className = "hw-row";
+      row.innerHTML = `
+        <input type="text" data-idx="${i}" value="${escapeAttr(val)}" placeholder="輸入作業項目">
+        <button type="button" class="remove" data-idx="${i}" title="刪除">✕</button>
+      `;
+      hwList.appendChild(row);
+    });
+
+    hwList.querySelectorAll('input[type="text"]').forEach(inp => {
+      inp.oninput = (e) => {
+        state.draft.homework[+e.target.dataset.idx] = e.target.value;
+      };
+    });
+    hwList.querySelectorAll('button.remove').forEach(btn => {
+      btn.onclick = (e) => {
+        const idx = +e.target.dataset.idx;
+        state.draft.homework.splice(idx, 1);
+        if (state.draft.homework.length === 0) state.draft.homework.push("");
+        render();
+      };
+    });
+
+    document.getElementById("add-hw-btn").onclick = () => {
+      state.draft.homework.push("");
+      render();
+    };
+
+    document.getElementById("draft-date").onchange = (e) => {
+      state.draft.date = e.target.value;
+    };
+
+    document.getElementById("draft-announcement").oninput = (e) => {
+      state.draft.announcement = e.target.value;
+    };
+
+    document.getElementById("publish-btn").onclick = () => {
+      const cleanHw = state.draft.homework.map(s => s.trim()).filter(Boolean);
+      const existing = findEntry(state.draft.date);
+      const newEntry = {
+        date: state.draft.date,
+        homework: cleanHw,
+        announcement: state.draft.announcement.trim(),
+        published: true,
+        ack: existing ? existing.ack : false
+      };
+      if (existing) {
+        Object.assign(existing, newEntry);
+      } else {
+        state.entries.push(newEntry);
+      }
+      state.selectedDate = state.draft.date;
+      state.draft = { date: todayISO, homework: [""], announcement: "" };
+      render();
+    };
+  }
+
+  function renderEntries() {
+    const wrap = document.getElementById("entries-wrap");
+    const sorted = [...state.entries].sort((a,b) => b.date.localeCompare(a.date));
+
+    if (sorted.length === 0) {
+      wrap.innerHTML = `<div class="empty-state">還沒有任何聯絡簿紀錄。</div>`;
+      return;
+    }
+
+    wrap.innerHTML = "";
+    sorted.forEach(entry => {
+      const card = document.createElement("div");
+      card.className = "entry-card";
+
+      let hwHtml = "";
+      if (entry.homework.length > 0) {
+        hwHtml = `
+          <div class="section-title">回家作業</div>
+          <ul class="hw-view-list">
+            ${entry.homework.map(h => `<li>${escapeHtml(h)}</li>`).join("")}
+          </ul>
+        `;
+      }
+
+      let annHtml = "";
+      if (entry.announcement) {
+        annHtml = `
+          <div class="section-title">聯絡事項</div>
+          <div class="announcement-text">${escapeHtml(entry.announcement)}</div>
+        `;
+      }
+
+      let ackHtml = "";
+      if (state.role === "parent") {
+        ackHtml = `
+          <div class="ack-row">
+            <span class="ack-status">${entry.ack ? "家長已閱讀" : "尚未確認閱讀"}</span>
+            <button class="ack-btn ${entry.ack ? "done" : ""}" data-date="${entry.date}">
+              ${entry.ack ? "✓ 已讀" : "標記已讀"}
+            </button>
+          </div>
+        `;
+      } else {
+        ackHtml = `
+          <div class="ack-row">
+            <span class="ack-status">${entry.ack ? "家長已讀" : "家長尚未讀取"}</span>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="entry-card-head">
+          <div><span class="entry-date">${fmtDate(entry.date)}</span><span class="entry-weekday">${fmtWeekday(entry.date)}</span></div>
+          <div class="stamp">施老師<br>確認</div>
+        </div>
+        ${hwHtml}
+        ${annHtml}
+        ${ackHtml}
+      `;
+
+      wrap.appendChild(card);
+
+      if (state.role === "parent") {
+        const ackBtn = card.querySelector(".ack-btn");
+        if (ackBtn && !entry.ack) {
+          ackBtn.onclick = () => {
+            entry.ack = true;
+            render();
+          };
+        }
+      }
+    });
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, m => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
+  function escapeAttr(str) { return escapeHtml(str); }
+
+  // ---------- 登入邏輯 ----------
+  let selectedLoginRole = "teacher";
+  const loginOverlay = document.getElementById("login-overlay");
+  const loginRoleGroup = document.getElementById("login-role-group");
+  const loginPasswordInput = document.getElementById("login-password");
+  const loginError = document.getElementById("login-error");
+
+  loginRoleGroup.querySelectorAll(".login-role-btn").forEach(btn => {
+    btn.onclick = () => {
+      selectedLoginRole = btn.dataset.role;
+      loginRoleGroup.querySelectorAll(".login-role-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      loginError.textContent = "";
+      updateLoginFormForRole();
+    };
+  });
+
+  function updateLoginFormForRole() {
+    const label = document.getElementById("login-password-label");
+    const needsPassword = selectedLoginRole !== "parent";
+    label.style.display = needsPassword ? "block" : "none";
+    loginPasswordInput.style.display = needsPassword ? "block" : "none";
+    loginPasswordInput.value = "";
+    document.getElementById("login-submit").textContent =
+      needsPassword ? "登入" : "進入聯絡簿";
+  }
+
+  function attemptLogin() {
+    if (selectedLoginRole === "parent") {
+      state.role = "parent";
+      loginOverlay.style.display = "none";
+      render();
+      return;
+    }
+    if (loginPasswordInput.value.trim() === VALID_PASSWORD) {
+      state.role = selectedLoginRole;
+      loginOverlay.style.display = "none";
+      loginPasswordInput.value = "";
+      loginError.textContent = "";
+      render();
+    } else {
+      loginError.textContent = "密碼錯誤，請再試一次。";
+    }
+  }
+
+  document.getElementById("login-submit").onclick = attemptLogin;
+  loginPasswordInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") attemptLogin();
+  });
+
+  document.getElementById("logout-btn").onclick = () => {
+    state.role = null;
+    loginOverlay.style.display = "flex";
+    selectedLoginRole = "teacher";
+    loginRoleGroup.querySelectorAll(".login-role-btn").forEach(b =>
+      b.classList.toggle("selected", b.dataset.role === "teacher")
+    );
+    updateLoginFormForRole();
+  };
+
+  updateLoginFormForRole();
+  render();
+})();
+</script>
+
+</body>
+</html>
