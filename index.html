@@ -25,21 +25,58 @@
   body {
     margin: 0;
     font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", -apple-system, sans-serif;
-    background: #EDE6D0;
-    color: var(--ink);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.45), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,255,255,0.3), transparent 45%),
+      repeating-linear-gradient(100deg, #C9B98A 0px, #C9B98A 2px, #CDBD8E 2px, #CDBD8E 4px),
+      linear-gradient(160deg, #D9CFA8, #C7B98D);
     min-height: 100vh;
+    color: var(--ink);
+    position: relative;
   }
 
-  .app {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    max-width: 1100px;
-    margin: 32px auto;
-    min-height: 680px;
-    box-shadow: 0 12px 40px rgba(43,43,61,0.18);
-    border-radius: 4px;
-    overflow: hidden;
+  .desk-deco {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.85;
+    z-index: 0;
   }
+  @media (max-width: 900px) { .desk-deco { display: none; } }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    max-width: 1100px;
+    margin: 44px auto;
+    min-height: 680px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 #fff,
+      0 26px 50px rgba(43,43,61,0.28),
+      0 6px 16px rgba(43,43,61,0.14);
+    animation: appIn 0.4s cubic-bezier(.2,.8,.3,1) both;
+  }
+
+  @keyframes appIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .app::before,
+  .app::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    background: var(--paper);
+    border-radius: 10px;
+    z-index: -1;
+  }
+  .app::before { bottom: -8px; height: 20px; box-shadow: 0 6px 10px rgba(43,43,61,0.12); }
+  .app::after { bottom: -14px; left: 22px; right: 22px; height: 20px; opacity: 0.6; }
 
   @media (max-width: 780px) {
     .app { grid-template-columns: 1fr; margin: 0; box-shadow: none; }
@@ -49,19 +86,42 @@
 
   /* ---------- 書背 / 側欄 ---------- */
   .spine {
-    background: var(--spine-green);
+    background: linear-gradient(165deg, var(--spine-green-light) 0%, var(--spine-green) 55%, #2E5A40 100%);
     color: #F4EFDD;
-    padding: 28px 20px;
+    padding: 30px 20px;
     display: flex;
     flex-direction: column;
     gap: 24px;
+    position: relative;
+  }
+
+  .spine::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 6px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.22));
+  }
+
+  .spine-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(244,239,221,0.15);
+    border: 1.5px solid rgba(244,239,221,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 4px;
   }
 
   .spine-title {
-    font-size: 22px;
+    font-size: 23px;
     font-weight: 700;
     letter-spacing: 0.03em;
     line-height: 1.4;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.25);
   }
 
   .spine-sub {
@@ -147,9 +207,32 @@
         var(--paper-line) 34px
       ),
       var(--paper);
-    padding: 36px 44px 60px;
+    padding: 36px 44px 60px 56px;
     overflow-y: auto;
     max-height: 90vh;
+    position: relative;
+  }
+
+  .page::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 26px;
+    background-image: radial-gradient(circle, #D9CFA8 4px, transparent 4.5px);
+    background-size: 26px 34px;
+    background-position: 13px 17px;
+    box-shadow: inset -2px 0 4px rgba(43,43,61,0.06);
+  }
+
+  .page::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 34px 34px 0;
+    border-color: transparent #EDE4C4 transparent transparent;
+    filter: drop-shadow(-2px 2px 2px rgba(43,43,61,0.12));
   }
 
   .page-header {
@@ -265,9 +348,18 @@
     cursor: pointer;
     font-family: inherit;
     box-shadow: 0 3px 0 #9B342D;
+    transition: transform 0.12s ease;
   }
   .btn-stamp:hover { transform: translateY(-1px); }
   .btn-stamp:active { transform: translateY(1px); box-shadow: 0 1px 0 #9B342D; }
+  .btn-stamp.stamped { animation: stampPress 0.35s ease; }
+
+  @keyframes stampPress {
+    0% { transform: scale(1); }
+    35% { transform: scale(0.9) rotate(-4deg); }
+    60% { transform: scale(1.06) rotate(2deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
 
   /* ---------- 條目卡(共用) ---------- */
   .entries { display: flex; flex-direction: column; gap: 18px; }
@@ -275,10 +367,21 @@
   .entry-card {
     background: var(--card-bg);
     border: 1px solid var(--paper-line);
-    border-radius: 3px;
+    border-radius: 6px;
     padding: 20px 22px;
     position: relative;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow), 0 6px 14px rgba(43,43,61,0.06);
+    animation: cardIn 0.25s ease both;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .entry-card:hover {
+    box-shadow: var(--shadow), 0 10px 20px rgba(43,43,61,0.1);
+    transform: translateY(-1px);
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .entry-card-head {
@@ -301,8 +404,8 @@
   }
 
   .stamp {
-    width: 46px;
-    height: 46px;
+    width: 52px;
+    height: 52px;
     border: 2.5px solid var(--stamp-red);
     border-radius: 50%;
     color: var(--stamp-red);
@@ -315,6 +418,16 @@
     flex-shrink: 0;
     text-align: center;
     line-height: 1.2;
+    position: relative;
+    box-shadow: 0 0 0 3px rgba(193,68,60,0.12);
+  }
+  .stamp::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid var(--stamp-red);
+    border-radius: 50%;
+    opacity: 0.55;
   }
 
   .section-title {
@@ -423,11 +536,21 @@
   .login-card {
     background: var(--card-bg);
     border: 1px solid var(--paper-line);
-    border-radius: 6px;
-    padding: 36px 32px;
+    border-radius: 10px;
+    padding: 38px 32px 32px;
     width: 100%;
-    max-width: 360px;
-    box-shadow: 0 12px 40px rgba(43,43,61,0.18);
+    max-width: 380px;
+    box-shadow: 0 24px 60px rgba(43,43,61,0.28), 0 6px 16px rgba(43,43,61,0.12);
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.3s ease both;
+  }
+  .login-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--spine-green), var(--stamp-red));
   }
 
   .login-card h2 {
@@ -451,13 +574,27 @@
     text-align: left;
     border: 1.5px solid var(--paper-line);
     background: #fff;
-    padding: 10px 14px;
-    border-radius: 6px;
+    padding: 11px 14px;
+    border-radius: 8px;
     font-family: inherit;
     font-size: 14px;
     cursor: pointer;
     color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
+  .login-role-btn:hover { transform: translateX(2px); }
+  .login-role-btn .role-icon {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #F1ECD8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .login-role-btn.selected .role-icon { background: var(--spine-green); color: #fff; }
   .login-role-btn.selected {
     border-color: var(--spine-green);
     background: #EAF1E7;
@@ -515,9 +652,133 @@
     font-family: inherit;
     align-self: flex-start;
   }
+
+  /* ---------- 圖片上傳 ---------- */
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px dashed var(--sage);
+    background: #F5F8F3;
+    color: var(--spine-green);
+    padding: 9px 16px;
+    border-radius: 20px;
+    font-size: 13.5px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .upload-btn:hover { background: #EAF1E7; }
+  .upload-btn input[type="file"] {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0; overflow: hidden;
+  }
+
+  .image-thumb-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .image-thumb {
+    position: relative;
+    width: 74px;
+    height: 74px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--paper-line);
+  }
+  .image-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .image-thumb .remove-img {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(43,43,61,0.65);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .entry-images-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .entry-image-thumb {
+    width: 84px;
+    height: 84px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--paper-line);
+    cursor: zoom-in;
+    flex-shrink: 0;
+  }
+  .entry-image-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.15s ease;
+  }
+  .entry-image-thumb:hover img { transform: scale(1.06); }
+
+  .img-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,18,15,0.86);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    cursor: zoom-out;
+  }
+  .img-lightbox.open { display: flex; }
+  .img-lightbox img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 6px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
 </style>
 </head>
 <body>
+
+<!-- 桌面裝飾插畫(僅寬螢幕顯示) -->
+<svg class="desk-deco" style="top:60px; left:4%; width:70px;" viewBox="0 0 100 100">
+  <g transform="rotate(-25 50 50)">
+    <rect x="42" y="10" width="16" height="65" rx="2" fill="#F2C94C" stroke="#2B2B3D" stroke-width="2"/>
+    <polygon points="42,75 58,75 50,92" fill="#E8B084" stroke="#2B2B3D" stroke-width="2"/>
+    <rect x="42" y="10" width="16" height="10" fill="#DE8F6E" stroke="#2B2B3D" stroke-width="2"/>
+  </g>
+</svg>
+
+<svg class="desk-deco" style="top:140px; right:5%; width:60px;" viewBox="0 0 100 100">
+  <path d="M30 20 Q10 20 10 45 Q10 70 35 70 Q55 70 55 50 L55 25 Q55 12 43 12 Q31 12 31 25 L31 60"
+    fill="none" stroke="#8A8577" stroke-width="6" stroke-linecap="round"/>
+</svg>
+
+<svg class="desk-deco" style="bottom:70px; left:6%; width:46px;" viewBox="0 0 100 100">
+  <path d="M50 5 L61 38 L96 38 L67 58 L78 91 L50 71 L22 91 L33 58 L4 38 L39 38 Z"
+    fill="#C1443C" opacity="0.85"/>
+</svg>
+
+<svg class="desk-deco" style="bottom:110px; right:6%; width:64px;" viewBox="0 0 100 100">
+  <ellipse cx="50" cy="80" rx="26" ry="8" fill="#8A8577" opacity="0.5"/>
+  <path d="M50 78 C30 78 26 55 30 40 C34 25 66 25 70 40 C74 55 70 78 50 78 Z" fill="#4F8563" stroke="#2B2B3D" stroke-width="2"/>
+  <path d="M50 40 L50 15" stroke="#3F6E52" stroke-width="4" stroke-linecap="round"/>
+</svg>
 
 <div class="login-overlay" id="login-overlay">
   <div class="login-card">
@@ -525,9 +786,9 @@
     <div class="login-sub">請選擇身份並輸入密碼登入</div>
 
     <div class="login-role-group" id="login-role-group">
-      <button type="button" class="login-role-btn selected" data-role="teacher">施老師</button>
-      <button type="button" class="login-role-btn" data-role="monitor">班長</button>
-      <button type="button" class="login-role-btn" data-role="parent">家長 / 學生</button>
+      <button type="button" class="login-role-btn selected" data-role="teacher"><span class="role-icon">👩‍🏫</span>施老師</button>
+      <button type="button" class="login-role-btn" data-role="monitor"><span class="role-icon">🎗️</span>班長</button>
+      <button type="button" class="login-role-btn" data-role="parent"><span class="role-icon">👪</span>家長 / 學生</button>
     </div>
 
     <label id="login-password-label">密碼</label>
@@ -538,14 +799,20 @@
   </div>
 </div>
 
+<div class="img-lightbox" id="img-lightbox">
+  <img id="img-lightbox-img" src="" alt="附加圖片放大檢視">
+</div>
+
 <div class="app">
   <aside class="spine">
     <div>
+      <div class="spine-badge">📘</div>
       <div class="spine-title">七年5班<br>聯絡簿</div>
       <div class="spine-sub" id="spine-role-label">施老師 · 2026 學年度</div>
     </div>
 
     <button class="logout-btn" id="logout-btn">登出</button>
+    <button class="logout-btn" id="refresh-btn">🔄 重新整理</button>
 
     <div>
       <div class="spine-section-label">歷史紀錄</div>
@@ -565,7 +832,7 @@
 </div>
 
 <script>
-(function () {
+(async function () {
   const todayISO = new Date().toISOString().slice(0, 10);
   const weekdayNames = ["日","一","二","三","四","五","六"];
 
@@ -592,7 +859,8 @@
     draft: {
       date: todayISO,
       homework: [""],
-      announcement: ""
+      announcement: "",
+      images: []
     }
   };
 
@@ -600,6 +868,67 @@
     const d = new Date(iso + "T00:00:00");
     d.setDate(d.getDate() + days);
     return d.toISOString().slice(0,10);
+  }
+
+  // ---------- 雲端同步(所有人共用同一份資料) ----------
+  const STORAGE_KEY = "seven-five-contact-book-entries";
+  let syncFailed = false;
+
+  async function loadEntriesFromCloud() {
+    try {
+      const res = await window.storage.get(STORAGE_KEY, true);
+      if (res && res.value) return JSON.parse(res.value);
+      return [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  async function saveEntriesToCloud() {
+    try {
+      await window.storage.set(STORAGE_KEY, JSON.stringify(state.entries), true);
+      syncFailed = false;
+    } catch (err) {
+      syncFailed = true;
+      console.error("聯絡簿同步失敗", err);
+    }
+    renderSyncBanner();
+  }
+
+  function renderSyncBanner() {
+    let banner = document.getElementById("sync-banner");
+    if (syncFailed) {
+      if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "sync-banner";
+        banner.style.cssText = "background:#F8DFC0;color:#7A4A17;padding:8px 16px;border-radius:6px;font-size:12.5px;margin-bottom:16px;";
+        banner.textContent = "⚠️ 目前無法連上雲端,這則內容可能只存在你這台裝置上,請稍後再試一次。";
+        const page = document.querySelector(".page");
+        page.insertBefore(banner, page.firstChild.nextSibling);
+      }
+    } else if (banner) {
+      banner.remove();
+    }
+  }
+
+  function compressImage(dataUrl, callback) {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 900;
+      let width = img.width, height = img.height;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      callback(canvas.toDataURL("image/jpeg", 0.72));
+    };
+    img.onerror = () => callback(dataUrl);
+    img.src = dataUrl;
   }
 
   function findEntry(date) {
@@ -611,8 +940,7 @@
 
     document.getElementById("spine-role-label").textContent = ROLE_LABELS[state.role] || "";
     document.getElementById("page-title").textContent =
-      state.role === "teacher" ? "登打今日聯絡事項" :
-      state.role === "monitor" ? "聯絡簿內容（班長檢視）" : "聯絡簿內容";
+      (state.role === "teacher" || state.role === "monitor") ? "登打今日聯絡事項" : "聯絡簿內容";
 
     renderSpineDates();
     renderTeacherForm();
@@ -631,7 +959,7 @@
     const div = document.createElement("div");
     div.id = "monitor-stats-wrap";
     div.className = "monitor-stats";
-    div.innerHTML = `<span>全班家長已讀進度</span><strong>${read} / ${total} 則已讀</strong>`;
+    div.innerHTML = `<span>📊 全班家長已讀進度</span><strong>${read} / ${total} 則已讀</strong>`;
 
     const entriesWrap = document.getElementById("entries-wrap");
     entriesWrap.parentNode.insertBefore(div, entriesWrap);
@@ -657,22 +985,29 @@
 
   function renderTeacherForm() {
     const wrap = document.getElementById("teacher-form-wrap");
-    if (state.role !== "teacher") { wrap.innerHTML = ""; return; }
+    if (state.role !== "teacher" && state.role !== "monitor") { wrap.innerHTML = ""; return; }
 
     wrap.innerHTML = `
       <div class="entry-form">
         <label>日期</label>
         <input type="date" id="draft-date" value="${state.draft.date}">
 
-        <label>回家作業</label>
+        <label>📚 回家作業</label>
         <div class="hw-list" id="draft-hw-list"></div>
         <button type="button" class="add-hw-btn" id="add-hw-btn">＋ 新增一項作業</button>
 
-        <label>聯絡事項 / 公告</label>
+        <label>📢 聯絡事項 / 公告</label>
         <textarea id="draft-announcement" placeholder="例如：明天請帶美術用具、班費繳交提醒⋯⋯">${state.draft.announcement}</textarea>
 
+        <label>📷 附加照片(選填,可從相簿選取或直接拍照)</label>
+        <label class="upload-btn">
+          ＋ 選擇圖片
+          <input type="file" id="draft-image-input" accept="image/*" multiple>
+        </label>
+        <div class="image-thumb-row" id="draft-image-thumbs"></div>
+
         <div class="form-actions">
-          <button class="btn-stamp" id="publish-btn">蓋章送出</button>
+          <button class="btn-stamp" id="publish-btn">🖋️ 蓋章送出</button>
         </div>
       </div>
     `;
@@ -716,25 +1051,70 @@
       state.draft.announcement = e.target.value;
     };
 
-    document.getElementById("publish-btn").onclick = () => {
-      const cleanHw = state.draft.homework.map(s => s.trim()).filter(Boolean);
-      const existing = findEntry(state.draft.date);
-      const newEntry = {
-        date: state.draft.date,
-        homework: cleanHw,
-        announcement: state.draft.announcement.trim(),
-        published: true,
-        ack: existing ? existing.ack : false
-      };
-      if (existing) {
-        Object.assign(existing, newEntry);
-      } else {
-        state.entries.push(newEntry);
-      }
-      state.selectedDate = state.draft.date;
-      state.draft = { date: todayISO, homework: [""], announcement: "" };
-      render();
+    renderDraftImageThumbs();
+
+    document.getElementById("draft-image-input").onchange = (e) => {
+      const files = Array.from(e.target.files || []);
+      files.forEach(file => {
+        if (!file.type.startsWith("image/")) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          compressImage(ev.target.result, (compressed) => {
+            state.draft.images.push(compressed);
+            renderDraftImageThumbs();
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = "";
     };
+
+    document.getElementById("publish-btn").onclick = (e) => {
+      const btn = e.currentTarget;
+      btn.classList.add("stamped");
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const cleanHw = state.draft.homework.map(s => s.trim()).filter(Boolean);
+        const existing = findEntry(state.draft.date);
+        const newEntry = {
+          date: state.draft.date,
+          homework: cleanHw,
+          announcement: state.draft.announcement.trim(),
+          published: true,
+          ack: existing ? existing.ack : false,
+          postedBy: state.role,
+          images: state.draft.images.slice()
+        };
+        if (existing) {
+          Object.assign(existing, newEntry);
+        } else {
+          state.entries.push(newEntry);
+        }
+        state.selectedDate = state.draft.date;
+        state.draft = { date: todayISO, homework: [""], announcement: "", images: [] };
+        render();
+        saveEntriesToCloud();
+      }, 320);
+    };
+  }
+
+  function renderDraftImageThumbs() {
+    const wrap = document.getElementById("draft-image-thumbs");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    state.draft.images.forEach((src, i) => {
+      const thumb = document.createElement("div");
+      thumb.className = "image-thumb";
+      thumb.innerHTML = `<img src="${src}" alt="附加圖片預覽"><button type="button" class="remove-img" data-idx="${i}">✕</button>`;
+      wrap.appendChild(thumb);
+    });
+    wrap.querySelectorAll(".remove-img").forEach(btn => {
+      btn.onclick = () => {
+        state.draft.images.splice(+btn.dataset.idx, 1);
+        renderDraftImageThumbs();
+      };
+    });
   }
 
   function renderEntries() {
@@ -754,7 +1134,7 @@
       let hwHtml = "";
       if (entry.homework.length > 0) {
         hwHtml = `
-          <div class="section-title">回家作業</div>
+          <div class="section-title">📚 回家作業</div>
           <ul class="hw-view-list">
             ${entry.homework.map(h => `<li>${escapeHtml(h)}</li>`).join("")}
           </ul>
@@ -764,8 +1144,18 @@
       let annHtml = "";
       if (entry.announcement) {
         annHtml = `
-          <div class="section-title">聯絡事項</div>
+          <div class="section-title">📢 聯絡事項</div>
           <div class="announcement-text">${escapeHtml(entry.announcement)}</div>
+        `;
+      }
+
+      let imgHtml = "";
+      if (entry.images && entry.images.length > 0) {
+        imgHtml = `
+          <div class="section-title">🖼️ 附加照片</div>
+          <div class="entry-images-grid">
+            ${entry.images.map((src, i) => `<div class="entry-image-thumb" data-src="${src}"><img src="${src}" alt="附加照片 ${i+1}"></div>`).join("")}
+          </div>
         `;
       }
 
@@ -787,17 +1177,24 @@
         `;
       }
 
+      const stampLabel = entry.postedBy === "monitor" ? "班長<br>確認" : "施老師<br>確認";
+
       card.innerHTML = `
         <div class="entry-card-head">
           <div><span class="entry-date">${fmtDate(entry.date)}</span><span class="entry-weekday">${fmtWeekday(entry.date)}</span></div>
-          <div class="stamp">施老師<br>確認</div>
+          <div class="stamp">${stampLabel}</div>
         </div>
         ${hwHtml}
         ${annHtml}
+        ${imgHtml}
         ${ackHtml}
       `;
 
       wrap.appendChild(card);
+
+      card.querySelectorAll(".entry-image-thumb").forEach(thumb => {
+        thumb.onclick = () => openLightbox(thumb.dataset.src);
+      });
 
       if (state.role === "parent") {
         const ackBtn = card.querySelector(".ack-btn");
@@ -805,6 +1202,7 @@
           ackBtn.onclick = () => {
             entry.ack = true;
             render();
+            saveEntriesToCloud();
           };
         }
       }
@@ -817,6 +1215,17 @@
     }[m]));
   }
   function escapeAttr(str) { return escapeHtml(str); }
+
+  const lightbox = document.getElementById("img-lightbox");
+  const lightboxImg = document.getElementById("img-lightbox-img");
+  function openLightbox(src) {
+    lightboxImg.src = src;
+    lightbox.classList.add("open");
+  }
+  lightbox.onclick = () => {
+    lightbox.classList.remove("open");
+    lightboxImg.src = "";
+  };
 
   // ---------- 登入邏輯 ----------
   let selectedLoginRole = "teacher";
@@ -845,10 +1254,11 @@
       needsPassword ? "登入" : "進入聯絡簿";
   }
 
-  function attemptLogin() {
+  async function attemptLogin() {
     if (selectedLoginRole === "parent") {
       state.role = "parent";
       loginOverlay.style.display = "none";
+      state.entries = await loadEntriesFromCloud();
       render();
       return;
     }
@@ -857,6 +1267,7 @@
       loginOverlay.style.display = "none";
       loginPasswordInput.value = "";
       loginError.textContent = "";
+      state.entries = await loadEntriesFromCloud();
       render();
     } else {
       loginError.textContent = "密碼錯誤，請再試一次。";
@@ -878,6 +1289,12 @@
     updateLoginFormForRole();
   };
 
+  document.getElementById("refresh-btn").onclick = async () => {
+    state.entries = await loadEntriesFromCloud();
+    render();
+  };
+
+  state.entries = await loadEntriesFromCloud();
   updateLoginFormForRole();
   render();
 })();
